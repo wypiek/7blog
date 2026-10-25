@@ -1,0 +1,28 @@
+@page "/admin/posts"
+@model SevenBlog.Pages.Admin.PostsModel
+@{ ViewData["Title"] = "Posts — Admin panel"; }
+<h2 class="admin-section-heading">All posts</h2>
+@if (Model.Posts.Count == 0)
+{
+    <p>No posts yet.</p>
+}
+else
+{
+    <div class="table-scroll has-scrollbar" role="region" aria-label="All posts" tabindex="0">
+        <table class="post-table admin-posts">
+            <thead><tr><th scope="col">Title</th><th scope="col">Author</th><th scope="col">Status</th><th scope="col">Pinned</th><th scope="col">Updated</th></tr></thead>
+            <tbody>
+            @foreach (var post in Model.Posts)
+            {
+                <tr>
+                    <td><a href="/admin/posts/@post.Id/" title="@post.Title">@post.Title</a></td>
+                    <td>@(post.AuthorUsername ?? "(no owner)")</td>
+                    <td>@post.Status</td>
+                    <td>@(post.Featured ? "Yes" : "")</td>
+                    <td>@post.UpdatedAt.ToString("MMM d, yyyy", System.Globalization.CultureInfo.InvariantCulture)</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}

@@ -1,0 +1,48 @@
+@page "/admin/posts/{id}"
+@model SevenBlog.Pages.Admin.PostModel
+@{ ViewData["Title"] = $"{Model.Post.Title} — Admin panel"; }
+<h2 class="admin-section-heading">@Model.Post.Title</h2>
+<p class="admin-post-meta">
+    /posts/@Model.Post.Slug/ · @Model.Post.Status · updated @Model.Post.UpdatedAt.ToString("MMM d, yyyy", System.Globalization.CultureInfo.InvariantCulture)
+    @if (Model.Post.Status == "Published") { <text>&nbsp;· <a href="@Model.Post.Url">View post</a></text> }
+    @if (Model.Post.AuthorId == UserStore.UserId(User)) { <text>&nbsp;· <a href="/manage/editor/@Model.Post.Id/">Open in editor</a></text> }
+</p>
+<p><a href="/admin/posts/">← All posts</a></p>
+<partial name="_FormErrors" />
+<div class="admin-columns">
+    <form method="post" asp-page-handler="Moderate" class="account-form">
+        <input type="hidden" name="Version" value="@Model.Version" />
+        <fieldset>
+            <legend>Moderation</legend>
+            <div class="form-field">
+                <label for="AuthorId">Author</label>
+                <select id="AuthorId" name="AuthorId">
+                    @if (Model.Post.AuthorId is null) { <option value="" selected>(no owner)</option> }
+                    @foreach (var author in Model.Authors)
+                    {
+                        <option value="@author.Id" selected="@(author.Id == Model.AuthorId)">@author.DisplayName (@author.Username)</option>
+                    }
+                </select>
+                <small>The new author can edit the post, and it shows under their name.</small>
+            </div>
+            <div class="form-field">
+                <label for="Status">Status</label>
+                <select id="Status" name="Status">
+                    <option value="Draft" selected="@(Model.Status == "Draft")">Draft (hidden)</option>
+                    <option value="Published" selected="@(Model.Status == "Published")">Published</option>
+                </select>
+            </div>
+            <div><input type="checkbox" id="Featured" name="Featured" value="true" checked="@Model.Featured" /><label for="Featured">Pin to the top of the blog</label></div>
+            <div class="form-actions"><button type="submit" class="default">Save changes</button></div>
+        </fieldset>
+    </form>
+    <form method="post" asp-page-handler="Delete" class="account-form">
+        <input type="hidden" name="Version" value="@Model.Version" />
+        <fieldset>
+            <legend>Delete post</legend>
+            <p class="form-help">Permanently removes the post, its banner and its images. This cannot be undone.</p>
+            <div><input type="checkbox" id="ConfirmDelete" name="ConfirmDelete" value="true" /><label for="ConfirmDelete">Yes, delete this post</label></div>
+            <div class="form-actions"><button type="submit">Delete post</button></div>
+        </fieldset>
+    </form>
+</div>

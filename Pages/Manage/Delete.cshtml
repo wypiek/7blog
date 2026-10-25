@@ -1,0 +1,14 @@
+@page "/manage/delete/{id}"
+@model SevenBlog.Pages.Manage.DeleteModel
+@{ ViewData["Title"] = "Delete post"; ViewData["NoIndex"] = true; }
+<header class="page-heading"><h1>Delete post</h1></header>
+<partial name="_FormErrors" />
+<form method="post" class="account-form">
+    <input type="hidden" asp-for="Version" />
+    <fieldset>
+        <legend>Confirm deletion</legend>
+        <p>Delete <strong>@Model.Post.Title</strong>?</p>
+        <p class="form-help">This permanently removes the post, including its saved draft.</p>
+        <div class="form-actions"><button type="submit">Delete post</button><a href="/manage/editor/@Model.Post.Id/">Keep post</a></div>
+    </fieldset>
+</form>

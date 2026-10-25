@@ -1,0 +1,9 @@
+# Merge this site block into the Caddyfile of your EXISTING Caddy installation.
+# Replace the domain. This repository does not install or launch Caddy.
+blog.example.com {
+    encode zstd gzip
+    reverse_proxy 127.0.0.1:8080
+}
+
+# If Caddy already runs in Docker, use compose.caddy-network.yaml and replace
+# the upstream above with: reverse_proxy sevenblog:8080

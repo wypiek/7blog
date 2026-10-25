@@ -1,0 +1,13 @@
+# Optional override for a Caddy container you already operate.
+# Adds 7blog to that container's existing network; creates no Caddy service.
+services:
+  blog:
+    networks:
+      caddy:
+        aliases:
+          - sevenblog
+
+networks:
+  caddy:
+    external: true
+    name: ${CADDY_NETWORK:-caddy}

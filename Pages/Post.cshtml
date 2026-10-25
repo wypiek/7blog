@@ -1,0 +1,64 @@
+@page "/posts/{slug}"
+@model PostModel
+@{
+    ViewData["Title"] = Model.Post.Title;
+    ViewData["Description"] = Model.Post.Description;
+    ViewData["Published"] = Model.Post.Date;
+}
+<article class="blog-post">
+    <header class="article-header">
+        <a class="back-link" href="/">← All posts</a>
+        @if (Model.Post.BannerUrl is string banner)
+        {
+            <img class="post-banner" src="@banner" alt="" width="1600" height="600" />
+        }
+        <h1>@Model.Post.Title</h1>
+        <div class="byline">
+            <img class="avatar" src="@Model.Post.AuthorAvatarUrl" alt="" width="36" height="36" />
+            <div>
+                <p>
+                    Posted by
+                    @if (Model.Post.AuthorUrl is not null) { <a href="@Model.Post.AuthorUrl" rel="author">@Model.Post.AuthorName</a> }
+                    else { <span>@Model.Post.AuthorName</span> }
+                    @if (Model.Author is not null) { <span class="byline-rank">· @Model.Author.RankLabel</span> }
+                </p>
+                <p class="post-meta">
+                    <time datetime="@Model.Post.Date.ToString("O")">@Model.Post.DisplayDate</time>
+                    <span>@Model.Post.ReadingMinutes min read</span>
+                </p>
+            </div>
+        </div>
+        @if (UserStore.UserId(User) == Model.Post.AuthorId && Model.Post.AuthorId is not null)
+        {
+            <p class="post-owner-actions"><a href="/manage/editor/@Model.Post.Id/">Edit post</a> · <a href="/manage/delete/@Model.Post.Id/">Delete post</a></p>
+        }
+        <div class="post-tags" aria-label="Topics">
+            @foreach (var tag in Model.Post.Tags)
+            {
+                <a href="/tags/@tag/">#@BlogStore.TagLabel(tag)</a>
+            }
+        </div>
+    </header>
+    <div class="prose">@Html.Raw(Model.Post.Html)</div>
+    @if (Model.Author is not null)
+    {
+        <fieldset class="author-card">
+            <legend>About the author</legend>
+            <div class="author-card-body">
+                <img class="avatar avatar-medium" src="@Model.Author.AvatarUrl" alt="" width="64" height="64" />
+                <div>
+                    <p><a href="@Model.Author.ProfileUrl" rel="author"><strong>@Model.Author.DisplayName</strong></a> <span class="byline-rank">@@@Model.Author.Username · @Model.Author.RankLabel</span></p>
+                    @if (!string.IsNullOrWhiteSpace(Model.Author.Bio)) { <p class="profile-bio">@Model.Author.Bio</p> }
+                    <p><a href="@Model.Author.ProfileUrl">More posts by @Model.Author.DisplayName</a></p>
+                </div>
+            </div>
+        </fieldset>
+    }
+    <footer class="article-footer">
+        <a href="/">← All posts</a>
+        @if (Model.Next is not null)
+        {
+            <a href="@Model.Next.Url">Next: @Model.Next.Title →</a>
+        }
+    </footer>
+</article>

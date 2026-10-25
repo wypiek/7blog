@@ -1,0 +1,30 @@
+@page "/manage"
+@model SevenBlog.Pages.Manage.IndexModel
+@{ ViewData["Title"] = "My posts"; ViewData["NoIndex"] = true; ViewData["Wide"] = true; }
+<header class="page-heading heading-with-action">
+    <div><h1>My posts</h1><p>@Model.Posts.Count @(Model.Posts.Count == 1 ? "post" : "posts") · @Model.Posts.Count(post => post.Status == "Published") published · @Model.Posts.Count(post => post.Status == "Draft") drafts</p></div>
+    <form action="/manage/editor/" method="get"><button type="submit" class="default">New post</button></form>
+</header>
+@if (Model.Posts.Count > 0)
+{
+    <div class="table-scroll has-scrollbar" role="region" aria-label="Your posts" tabindex="0">
+        <table class="post-table">
+            <thead><tr><th scope="col">Title</th><th scope="col">Status</th><th scope="col">Updated</th><th scope="col">Actions</th></tr></thead>
+            <tbody>
+            @foreach (var post in Model.Posts)
+            {
+                <tr>
+                    <td><a href="/manage/editor/@post.Id/" title="@post.Title">@post.Title</a></td>
+                    <td>@post.Status</td>
+                    <td>@post.UpdatedAt.ToString("MMM d, yyyy", System.Globalization.CultureInfo.InvariantCulture)</td>
+                    <td class="row-actions"><a href="/manage/editor/@post.Id/">Edit</a>@if (post.Status == "Published") { <a href="@post.Url">View</a> }<a href="/manage/delete/@post.Id/">Delete</a></td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <fieldset class="message"><legend>No posts yet</legend><p>Write your first post and save it as a draft or publish it.</p><p><a href="/manage/editor/">Create a post</a></p></fieldset>
+}

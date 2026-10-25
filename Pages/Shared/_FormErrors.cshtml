@@ -1,0 +1,7 @@
+@if (!ViewData.ModelState.IsValid)
+{
+    <fieldset class="message" role="alert">
+        <legend>Please check the following</legend>
+        <div asp-validation-summary="All"></div>
+    </fieldset>
+}

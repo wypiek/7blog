@@ -1,0 +1,9 @@
+@page "/Error"
+@{
+    Response.StatusCode = 500;
+    ViewData["Title"] = "Something went wrong";
+    ViewData["NoIndex"] = true;
+}
+<header class="page-heading"><p>Error 500</p><h1>Something went wrong</h1></header>
+<p>Please try again later.</p>
+<p class="return-link"><a href="/">Back to posts</a></p>

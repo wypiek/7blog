@@ -1,0 +1,26 @@
+@page "/admin/users/new"
+@model SevenBlog.Pages.Admin.NewUserModel
+@{ ViewData["Title"] = "New user — Admin panel"; }
+<h2 class="admin-section-heading">New user</h2>
+<partial name="_FormErrors" />
+<form method="post" class="account-form">
+    <fieldset>
+        <legend>Account</legend>
+        <div class="form-field"><label for="Username">Username</label><input type="text" id="Username" name="Username" value="@Model.Username" required maxlength="32" autocomplete="off" /><small>3–32 lowercase letters, digits, hyphens or underscores. Used to sign in and in the profile address.</small></div>
+        <div class="form-field"><label for="DisplayName">Display name</label><input type="text" id="DisplayName" name="DisplayName" value="@Model.DisplayName" maxlength="80" /><small>Optional. Defaults to the username.</small></div>
+        <div class="form-field">
+            <label for="Rank">Rank</label>
+            <select id="Rank" name="Rank">
+                <option value="Author" selected="@(Model.Rank != "Admin")">Author</option>
+                <option value="Admin" selected="@(Model.Rank == "Admin")">Administrator</option>
+            </select>
+        </div>
+    </fieldset>
+    <fieldset>
+        <legend>Password</legend>
+        <div class="form-field"><label for="Password">Password</label><input type="password" id="Password" name="Password" required minlength="12" maxlength="128" autocomplete="new-password" /></div>
+        <div class="form-field"><label for="Confirm">Confirm password</label><input type="password" id="Confirm" name="Confirm" required maxlength="128" autocomplete="new-password" /></div>
+        <p class="form-help">12–128 characters. Share it with the person privately; they can change it in Account settings.</p>
+    </fieldset>
+    <div class="form-actions"><button type="submit" class="default">Create user</button><a href="/admin/users/">Cancel</a></div>
+</form>

@@ -1,0 +1,35 @@
+@page "/admin"
+@model SevenBlog.Pages.Admin.IndexModel
+@{ ViewData["Title"] = "Admin panel"; }
+<div class="admin-overview">
+    <fieldset>
+        <legend>Accounts</legend>
+        <dl>
+            <div><dt>Total</dt><dd>@Model.Users.Count</dd></div>
+            <div><dt>Administrators</dt><dd>@Model.Users.Count(user => user.Rank == "Admin" && !user.Disabled)</dd></div>
+            <div><dt>Authors</dt><dd>@Model.Users.Count(user => user.Rank == "Author" && !user.Disabled)</dd></div>
+            <div><dt>Disabled</dt><dd>@Model.Users.Count(user => user.Disabled)</dd></div>
+        </dl>
+    </fieldset>
+    <fieldset>
+        <legend>Posts</legend>
+        <dl>
+            <div><dt>Published</dt><dd>@Model.Posts.Count(post => post.Status == "Published")</dd></div>
+            <div><dt>Drafts</dt><dd>@Model.Posts.Count(post => post.Status == "Draft")</dd></div>
+            <div><dt>Scheduled</dt><dd>@Model.Posts.Count(post => post.Status == "Scheduled")</dd></div>
+            <div><dt>Pinned</dt><dd>@Model.Posts.Count(post => post.Featured)</dd></div>
+        </dl>
+    </fieldset>
+    <fieldset>
+        <legend>Storage</legend>
+        <dl>
+            <div><dt>Images</dt><dd>@Model.Images.Count</dd></div>
+            <div><dt>Image files</dt><dd>@IndexModel.Size(Model.Images.Bytes)</dd></div>
+            <div><dt>Database</dt><dd>@IndexModel.Size(Model.DatabaseBytes)</dd></div>
+        </dl>
+    </fieldset>
+</div>
+<div class="form-actions">
+    <form action="/admin/users/new/" method="get"><button type="submit">New user…</button></form>
+    <form action="/manage/editor/" method="get"><button type="submit">New post…</button></form>
+</div>

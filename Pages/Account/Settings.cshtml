@@ -1,0 +1,55 @@
+@page "/account/settings"
+@model SevenBlog.Pages.Account.SettingsModel
+@{ ViewData["Title"] = "Account settings"; ViewData["NoIndex"] = true; }
+<header class="page-heading"><h1>Account settings</h1><p><a href="@Model.Account.ProfileUrl">View your public profile</a></p></header>
+<partial name="_FormErrors" />
+<form method="post" asp-page-handler="Profile" class="account-form">
+    <fieldset><legend>Profile</legend>
+        <div class="form-field"><label asp-for="Profile.DisplayName">Display name</label><input asp-for="Profile.DisplayName" required maxlength="80" /></div>
+        <div class="form-field"><label asp-for="Profile.Bio">About you</label><textarea asp-for="Profile.Bio" rows="4" maxlength="1000"></textarea></div>
+        <p class="form-help">Rank: @Model.Account.RankLabel</p>
+        <div class="form-actions"><button type="submit">Save profile</button></div>
+    </fieldset>
+</form>
+<form method="post" asp-page-handler="Username" class="account-form">
+    <fieldset><legend>Username</legend>
+        <div class="form-field">
+            <label for="NewUsername">Username</label>
+            <input type="text" id="NewUsername" name="NewUsername" value="@(Model.NewUsername ?? Model.Account.Username)" required maxlength="32" autocomplete="username" />
+            <small>Used to sign in and in your profile address (/users/@Model.Account.Username/). Links to the old address stop working.</small>
+        </div>
+        <div class="form-field"><label for="UsernamePassword">Current password</label><input type="password" id="UsernamePassword" name="UsernamePassword" required maxlength="128" autocomplete="current-password" /></div>
+        <div class="form-actions"><button type="submit">Change username</button></div>
+    </fieldset>
+</form>
+<form method="post" asp-page-handler="Pictures" class="account-form" enctype="multipart/form-data">
+    <fieldset><legend>Pictures</legend>
+        <div class="picture-row">
+            <img class="avatar avatar-large" src="@Model.Account.AvatarUrl" alt="Your current profile picture" width="96" height="96" />
+            <div class="form-field">
+                <label asp-for="Avatar">Profile picture</label>
+                <input asp-for="Avatar" type="file" accept="@ImageProcessor.Accept" />
+                <small>Cropped to a square and resized to 256 px.</small>
+                @if (Model.Account.AvatarId is not null) { <div><input asp-for="RemoveAvatar" /><label asp-for="RemoveAvatar">Remove profile picture</label></div> }
+            </div>
+        </div>
+        @if (Model.Account.BannerUrl is string bannerUrl) { <img class="banner-preview profile-banner-preview" src="@bannerUrl" alt="Your current profile banner" /> }
+        <div class="form-field">
+            <label asp-for="ProfileBanner">Profile banner</label>
+            <input asp-for="ProfileBanner" type="file" accept="@ImageProcessor.Accept" />
+            <small>Shown at the top of your profile. Cropped to 4:1.</small>
+            @if (Model.Account.BannerId is not null) { <div><input asp-for="RemoveProfileBanner" /><label asp-for="RemoveProfileBanner">Remove profile banner</label></div> }
+        </div>
+        <p class="form-help">JPEG, PNG, WebP or GIF, up to 12 MB each. Images are compressed when you save.</p>
+        <div class="form-actions"><button type="submit">Save pictures</button></div>
+    </fieldset>
+</form>
+<form method="post" asp-page-handler="Password" class="account-form">
+    <fieldset><legend>Change password</legend>
+        <div class="form-field"><label asp-for="Password.Current">Current password</label><input asp-for="Password.Current" type="password" autocomplete="current-password" required maxlength="128" /></div>
+        <div class="form-field"><label asp-for="Password.New">New password</label><input asp-for="Password.New" type="password" autocomplete="new-password" required minlength="12" maxlength="128" /></div>
+        <div class="form-field"><label asp-for="Password.Confirm">Confirm new password</label><input asp-for="Password.Confirm" type="password" autocomplete="new-password" required maxlength="128" /></div>
+        <p class="form-help">Use 12–128 characters. Changing your password signs out all existing sessions.</p>
+        <div class="form-actions"><button type="submit">Change password</button></div>
+    </fieldset>
+</form>

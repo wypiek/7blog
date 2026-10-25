@@ -1,0 +1,7 @@
+# Keep Unix line endings in the repository and working copies, so Docker builds on Linux
+# behave the same whichever OS the code was cloned on.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.webp binary
+*.db binary

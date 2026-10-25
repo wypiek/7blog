@@ -1,0 +1,33 @@
+@model BlogPost
+<article class="post-summary">
+    @if (Model.BannerUrl is string banner)
+    {
+        <a class="post-summary-banner" href="@Model.Url" tabindex="-1" aria-hidden="true"><img class="post-banner" src="@banner" alt="" width="1600" height="600" loading="lazy" decoding="async" /></a>
+    }
+    <header>
+        <div class="post-meta">
+            <span class="post-author">
+                <img class="avatar avatar-small" src="@Model.AuthorAvatarUrl" alt="" width="20" height="20" />
+                @if (Model.AuthorUrl is not null) { <a href="@Model.AuthorUrl">@Model.AuthorName</a> }
+                else { <span>@Model.AuthorName</span> }
+            </span>
+            <time datetime="@Model.Date.ToString("O")">@Model.DisplayDate</time>
+            <span>@Model.ReadingMinutes min read</span>
+            @if (Model.Featured)
+            {
+                <span>Pinned</span>
+            }
+        </div>
+        <h2><a href="@Model.Url">@Model.Title</a></h2>
+    </header>
+    <p>@Model.Description</p>
+    <footer class="post-summary-footer">
+        <a href="@Model.Url" aria-label="Read @Model.Title">Read post →</a>
+        <div class="post-tags" aria-label="Topics">
+            @foreach (var tag in Model.Tags)
+            {
+                <a href="/tags/@tag/">#@BlogStore.TagLabel(tag)</a>
+            }
+        </div>
+    </footer>
+</article>

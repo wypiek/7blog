@@ -1,0 +1,22 @@
+@{
+    Layout = "_Layout";
+    ViewData["Wide"] = true;
+    ViewData["NoIndex"] = true;
+    var path = (Context.Request.Path.Value ?? "").TrimEnd('/');
+    var section = path.StartsWith("/admin/users") ? "users" : path.StartsWith("/admin/posts") ? "posts"
+        : path.StartsWith("/admin/analytics") ? "analytics" : path.StartsWith("/admin/settings") ? "settings" : "overview";
+}
+@* A Windows 7 property sheet: 7.css tabs above one tab panel. The tabs are GET buttons, so they work without JavaScript. *@
+<header class="page-heading"><h1>Admin panel</h1><p>Manage accounts, posts and settings for @Site.Current.Name.</p></header>
+<form method="get" class="admin-tabs">
+    <menu role="tablist" aria-label="Admin sections">
+        <button type="submit" role="tab" formaction="/admin/" aria-selected="@(section == "overview" ? "true" : "false")">Overview</button>
+        <button type="submit" role="tab" formaction="/admin/users/" aria-selected="@(section == "users" ? "true" : "false")">Users</button>
+        <button type="submit" role="tab" formaction="/admin/posts/" aria-selected="@(section == "posts" ? "true" : "false")">Posts</button>
+        <button type="submit" role="tab" formaction="/admin/analytics/" aria-selected="@(section == "analytics" ? "true" : "false")">Analytics</button>
+        <button type="submit" role="tab" formaction="/admin/settings/" aria-selected="@(section == "settings" ? "true" : "false")">Settings</button>
+    </menu>
+</form>
+<div role="tabpanel" class="admin-panel">
+    @RenderBody()
+</div>

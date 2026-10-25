@@ -1,0 +1,15 @@
+@page "/"
+<header class="page-heading">
+    <h1>Posts</h1>
+    <p>The latest entries, newest first.</p>
+</header>
+<div class="post-list">
+    @foreach (var post in Blog.Posts.OrderByDescending(post => post.Featured))
+    {
+        <partial name="_PostSummary" model="post" />
+    }
+    @if (Blog.Posts.Count == 0)
+    {
+        <p>No posts yet.</p>
+    }
+</div>

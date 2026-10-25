@@ -1,0 +1,19 @@
+@page "/about"
+@{
+    ViewData["Title"] = "About";
+    var site = Site.Current;
+}
+<header class="page-heading"><h1>About</h1></header>
+<div class="prose">
+    @if (!string.IsNullOrWhiteSpace(site.About))
+    {
+        @Html.Raw(MarkdownRenderer.Render(site.About))
+    }
+    else
+    {
+        <p>This is @site.Name, a personal blog by @site.Author.</p>
+        <p>@site.Description</p>
+    }
+    <h2>Follow the blog</h2>
+    <p>Browse the <a href="/archive/">archive</a>, choose a topic, or <a href="/rss.xml">subscribe to the RSS feed</a> to get new posts in your reader.</p>
+</div>

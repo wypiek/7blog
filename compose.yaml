@@ -1,0 +1,48 @@
+name: 7blog
+
+# Builds and runs only the blog. Caddy is NOT part of this file: it is never
+# pulled, created or started here. Point your existing Caddy at the blog.
+services:
+  blog:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: 7blog:local
+    # Always build locally; `docker compose pull` never fetches this service.
+    pull_policy: build
+    restart: unless-stopped
+    environment:
+      Blog__Name: ${BLOG_NAME:-7blog}
+      Blog__SiteUrl: ${BLOG_SITE_URL:?Set BLOG_SITE_URL in .env}
+      Blog__Author: ${BLOG_AUTHOR:-The 7blog author}
+      Blog__Description: ${BLOG_DESCRIPTION:-Notes, projects, and other things.}
+      Blog__ContentPath: /app/content/posts
+      Blog__DataPath: /app/data
+      AllowedHosts: ${BLOG_ALLOWED_HOSTS:-*}
+      ReverseProxy__KnownProxies__0: ${BLOG_KNOWN_PROXY:-127.0.0.1}
+      # Docker's default bridge pools; lets the login rate limiter see real client IPs.
+      ReverseProxy__KnownNetworks__0: ${BLOG_TRUSTED_NETWORK:-172.16.0.0/12}
+    ports:
+      - "127.0.0.1:${BLOG_PORT:-8080}:8080"
+    volumes:
+      - ./content:/app/content:ro
+      - blog-data:/app/data
+    read_only: true
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    # Room for decoding large photo uploads (at most two at a time).
+    mem_limit: 512m
+    cpus: 1.0
+    pids_limit: 100
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+volumes:
+  blog-data:

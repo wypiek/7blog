@@ -1,0 +1,15 @@
+@page "/Status/{code:int}"
+@model SevenBlog.Pages.StatusModel
+@{
+    ViewData["Title"] = Model.Code switch { 404 => "Page not found", 403 => "Access denied", _ => "Something went wrong" };
+    ViewData["NoIndex"] = true;
+}
+<header class="page-heading">
+    <p>Error @Model.Code</p>
+    <h1>@ViewData["Title"]</h1>
+</header>
+<p>@(Model.Code switch {
+    404 => "The page doesn't exist or has been moved.",
+    403 => "Your account doesn't have permission to open this page.",
+    _ => "Please try again later." })</p>
+<p class="return-link"><a href="/">Back to posts</a></p>

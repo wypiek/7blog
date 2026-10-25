@@ -1,0 +1,95 @@
+@page "/manage/editor/{id?}"
+@model SevenBlog.Pages.Manage.EditorModel
+@{ ViewData["Title"] = Model.IsNew ? "New post" : "Edit post"; ViewData["NoIndex"] = true; ViewData["Wide"] = true; }
+<header class="page-heading">
+    <h1>@ViewData["Title"]</h1>
+    <p><a href="/manage/">← My posts</a>@if (Model.Existing?.Status == "Published") { <text> · <a href="@Model.Existing.Url">View published post</a></text> }</p>
+</header>
+<partial name="_FormErrors" />
+<form method="post" id="post-editor" class="editor-form" enctype="multipart/form-data">
+    <input type="hidden" asp-for="Input.Version" />
+    <fieldset>
+        <legend>Post details</legend>
+        <div class="form-field"><label asp-for="Input.Title">Title</label><input asp-for="Input.Title" required maxlength="180" /></div>
+        <div class="form-field"><label asp-for="Input.Description">Description</label><textarea asp-for="Input.Description" rows="2" required maxlength="400"></textarea><small>Used in the post list, search, and RSS.</small></div>
+        <div class="form-columns">
+            <div class="form-field"><label asp-for="Input.Slug">Post address</label><input asp-for="Input.Slug" required maxlength="100" pattern="[a-z0-9]+(-[a-z0-9]+)*" /><small>/posts/<span id="slug-preview">@(string.IsNullOrEmpty(Model.Input.Slug) ? "your-post" : Model.Input.Slug)</span>/</small></div>
+            <div class="form-field"><label asp-for="Input.Tags">Topics</label><input asp-for="Input.Tags" required maxlength="420" placeholder="projects, thoughts" /><small>Separate topics with commas. Use hyphens for spaces.</small></div>
+        </div>
+    </fieldset>
+    <fieldset>
+        <legend>Banner</legend>
+        @if (Model.Existing?.BannerUrl is string bannerUrl)
+        {
+            <img class="banner-preview" src="@bannerUrl" alt="Current banner" />
+            <div><input asp-for="RemoveBanner" /><label asp-for="RemoveBanner">Remove the banner</label></div>
+        }
+        <div class="form-field">
+            <label asp-for="Banner">@(Model.Existing?.BannerId is null ? "Banner image" : "Replace banner image")</label>
+            <input asp-for="Banner" type="file" accept="@ImageProcessor.Accept" />
+            <small>Shown above the post and on the home page. Cropped to 8:3 and compressed when you save.</small>
+        </div>
+    </fieldset>
+    <div class="editor-content">
+        <menu role="tablist" aria-label="Post content">
+            <button type="submit" asp-page-handler="Write" formnovalidate role="tab" id="write-tab" aria-controls="write-panel" aria-selected="@(!Model.ShowPreview ? "true" : "false")">Write</button>
+            <button type="submit" asp-page-handler="Preview" formnovalidate role="tab" id="preview-tab" aria-controls="preview-panel" aria-selected="@(Model.ShowPreview ? "true" : "false")">Preview</button>
+        </menu>
+        <article role="tabpanel" id="write-panel" aria-labelledby="write-tab" hidden="@Model.ShowPreview">
+            <div class="editor-toolbar" role="group" aria-label="Markdown formatting" hidden>
+                <button type="button" data-format="bold">Bold</button>
+                <button type="button" data-format="italic">Italic</button>
+                <button type="button" data-format="heading">Heading</button>
+                <button type="button" data-format="link">Link</button>
+                <button type="button" data-format="list">List</button>
+                <button type="button" data-format="code">Code</button>
+                <button type="button" data-format="image">Image…</button>
+            </div>
+            <label class="sr-only" asp-for="Input.Markdown">Post text in Markdown</label>
+            <textarea asp-for="Input.Markdown" class="markdown-input" rows="20" required="@(!Model.ShowPreview)" maxlength="100000" spellcheck="true"></textarea>
+        </article>
+        <article role="tabpanel" id="preview-panel" aria-labelledby="preview-tab" hidden="@(!Model.ShowPreview)"><div class="prose" id="markdown-preview">@Html.Raw(Model.PreviewHtml)</div></article>
+        <div class="status-bar editor-status">
+            <p class="status-bar-field">Markdown</p>
+            <p class="status-bar-field" id="editor-word-count">@((Model.Input.Markdown ?? "").Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Length) words</p>
+            <p class="status-bar-field" id="preview-status" role="status" aria-live="polite">@(Model.ShowPreview ? "Preview · not saved" : "Changes are saved when you submit.")</p>
+        </div>
+    </div>
+    <fieldset id="post-images">
+        <legend>Images in this post</legend>
+        <p class="form-help">Images are compressed on upload. Put one anywhere in the text with its Markdown line, or use <strong>Image…</strong> in the toolbar, paste, or drop a file into the text to insert it at the cursor.</p>
+        <ul class="attachment-list" id="attachment-list">
+            @foreach (var item in Model.Attachments)
+            {
+                <li>
+                    <img src="@item.Url" alt="" width="@item.Width" height="@item.Height" loading="lazy" />
+                    <code>![Image](@item.Url)</code>
+                    <button type="button" data-insert="![Image](@item.Url)" hidden>Insert</button>
+                </li>
+            }
+        </ul>
+        <div class="form-field upload-field">
+            <label asp-for="Attachment">Upload an image</label>
+            <div class="upload-row">
+                <input asp-for="Attachment" type="file" accept="@ImageProcessor.Accept" />
+                <button type="submit" asp-page-handler="Upload" formnovalidate id="upload-attachment">Upload</button>
+            </div>
+            <small>JPEG, PNG, WebP or GIF, up to 12 MB. Large photos are resized to 1600 px.</small>
+        </div>
+    </fieldset>
+    <fieldset>
+        <legend>Publishing</legend>
+        <div class="publishing-controls">
+            <div class="form-field"><label asp-for="Input.Status">Status</label><select asp-for="Input.Status"><option value="Draft">Draft</option><option value="Published">Published</option></select></div>
+            @if (User.IsInRole("Admin")) { <div><input asp-for="Input.Featured" /><label asp-for="Input.Featured">Pin to the top of the blog</label></div> }
+        </div>
+        <div class="form-actions">
+            <button type="submit" asp-page-handler="Save" id="save-post" class="default">Save post</button>
+            <a href="/manage/">Cancel</a>
+            @if (Model.Existing is not null) { <a class="delete-link" href="/manage/delete/@Model.Existing.Id/">Delete post</a> }
+        </div>
+    </fieldset>
+</form>
+@section Scripts {
+    <script src="~/js/editor.js" asp-append-version="true" defer></script>
+}

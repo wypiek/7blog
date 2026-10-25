@@ -1,0 +1,11 @@
+@page "/account/logout"
+@model SevenBlog.Pages.Account.LogoutModel
+@{ ViewData["Title"] = "Sign out"; ViewData["NoIndex"] = true; }
+<header class="page-heading"><h1>Sign out</h1></header>
+<form method="post" class="account-form">
+    <fieldset>
+        <legend>Confirm</legend>
+        <p>Sign out of your account on this browser?</p>
+        <div class="form-actions"><button type="submit" class="default">Sign out</button><a href="/manage/">Cancel</a></div>
+    </fieldset>
+</form>

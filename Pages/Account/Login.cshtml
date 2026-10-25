@@ -1,0 +1,15 @@
+@page "/account/login"
+@model SevenBlog.Pages.Account.LoginModel
+@{ ViewData["Title"] = "Sign in"; ViewData["NoIndex"] = true; }
+<header class="page-heading"><h1>Sign in</h1><p>Manage your posts and profile.</p></header>
+<partial name="_FormErrors" />
+<form method="post" class="account-form">
+    <input type="hidden" asp-for="ReturnUrl" />
+    <fieldset>
+        <legend>Your account</legend>
+        <div class="form-field"><label asp-for="Input.Username">Username</label><input asp-for="Input.Username" autocomplete="username" required maxlength="32" /></div>
+        <div class="form-field"><label asp-for="Input.Password">Password</label><input asp-for="Input.Password" type="password" autocomplete="current-password" required maxlength="128" /></div>
+        <div class="form-actions"><button type="submit" class="default">Sign in</button><a href="/">Back to posts</a></div>
+    </fieldset>
+</form>
+<p class="form-help">Accounts are created by the site administrator.</p>

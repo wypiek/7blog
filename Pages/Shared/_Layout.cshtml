@@ -1,0 +1,167 @@
+@{
+    var blog = BlogSettings.Value;
+    var site = Site.Current;
+    var title = ViewData["Title"] as string;
+    var description = ViewData["Description"] as string ?? site.Description;
+    var current = Context.Request.Path.Value ?? "/";
+    var published = ViewData["Published"] as DateTimeOffset?;
+    var canonical = blog.Absolute(current.EndsWith('/') ? current : current + "/");
+    var accountId = UserStore.UserId(User);
+    var signedInUser = accountId is null ? null : Accounts.FindById(accountId);
+    var wide = ViewData["Wide"] is true;
+}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="@description" />
+    <meta name="theme-color" content="#4580c4" />
+    <title>@(title is null ? site.Name : $"{title} — {site.Name}")</title>
+    <link rel="icon" type="@(site.IconId is null ? "image/svg+xml" : "image/webp")" href="@site.IconUrl" />
+    <link rel="stylesheet" href="~/vendor/7.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="canonical" href="@canonical" />
+    <link rel="alternate" type="application/rss+xml" title="@site.Name RSS" href="/rss.xml" />
+    <meta property="og:title" content="@(title ?? site.Name)" />
+    <meta property="og:description" content="@description" />
+    <meta property="og:url" content="@canonical" />
+    <meta property="og:site_name" content="@site.Name" />
+    <meta property="og:type" content="@(published.HasValue ? "article" : "website")" />
+    @if (published.HasValue)
+    {
+        <meta property="article:published_time" content="@published.Value.ToString("O")" />
+    }
+    @if (ViewData["NoIndex"] is true)
+    {
+        <meta name="robots" content="noindex" />
+    }
+</head>
+<body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header @(site.HeaderUrl is null ? "" : "has-header-image")" style="@(site.HeaderUrl is null ? null : $"background-image: url('{site.HeaderUrl}')")">
+        <div class="site-width header-inner">
+            <div>
+                <a class="site-name" href="/">@site.Name</a>
+                <p class="site-description">@site.Description</p>
+            </div>
+            <form class="searchbox site-search" action="/search/" method="get" role="search">
+                <label class="sr-only" for="site-search">Search posts</label>
+                <input id="site-search" type="search" name="q" placeholder="Search posts" maxlength="200" value="@Context.Request.Query["q"]" />
+                <button type="submit" aria-label="search"></button>
+            </form>
+        </div>
+    </header>
+    <nav class="site-nav" aria-label="Main navigation">
+        @* 7.css menu bar. Drop-down menus open on hover (can-hover) and on keyboard focus or tap (:focus-within), without JavaScript. *@
+        <ul role="menubar" class="can-hover">
+            <li role="menuitem"><a href="/" aria-current="@(current == "/" ? "page" : null)">Posts</a></li>
+            <li role="menuitem"><a href="/archive/" aria-current="@(current.StartsWith("/archive") ? "page" : null)">Archive</a></li>
+            @if (Blog.Tags.Count > 0)
+            {
+                <li role="menuitem" tabindex="0" aria-haspopup="true" class="nav-menu @(current.StartsWith("/tags/") ? "nav-current" : "")">
+                    Topics <span aria-hidden="true">▾</span>
+                    <ul role="menu" class="topic-menu">
+                        @foreach (var tag in Blog.Tags)
+                        {
+                            <li role="menuitem"><a href="/tags/@tag/">@BlogStore.TagLabel(tag)<span>@Blog.Posts.Count(post => post.Tags.Contains(tag))</span></a></li>
+                        }
+                    </ul>
+                </li>
+            }
+            <li role="menuitem"><a href="/about/" aria-current="@(current.StartsWith("/about") ? "page" : null)">About</a></li>
+            @if (signedInUser is not null)
+            {
+                <li role="menuitem" tabindex="0" aria-haspopup="true" class="nav-menu nav-account @(current.StartsWith("/manage") || current.StartsWith("/account") || current.StartsWith("/admin") ? "nav-current" : "")">
+                    <img src="@signedInUser.AvatarUrl" alt="" width="18" height="18" />@signedInUser.DisplayName <span aria-hidden="true">▾</span>
+                    <ul role="menu">
+                        <li role="menuitem"><a href="/manage/">My posts</a></li>
+                        <li role="menuitem" class="has-divider"><a href="/manage/editor/">New post</a></li>
+                        <li role="menuitem"><a href="@signedInUser.ProfileUrl">Public profile</a></li>
+                        <li role="menuitem" class="has-divider"><a href="/account/settings/">Account settings</a></li>
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <li role="menuitem" class="has-divider"><a href="/admin/">Admin panel</a></li>
+                        }
+                        <li role="menuitem"><a href="/account/logout/">Sign out</a></li>
+                    </ul>
+                </li>
+            }
+            else
+            {
+                <li role="menuitem" class="nav-account"><a href="/account/login/" aria-current="@(current.StartsWith("/account/login") ? "page" : null)">Sign in</a></li>
+            }
+        </ul>
+    </nav>
+    <div class="site-width site-content @(wide ? "content-wide" : "")">
+        <main id="main" tabindex="-1">
+            @if (TempData["Notice"] is string notice)
+            {
+                <fieldset class="message" role="status"><legend>Notice</legend><p>@notice</p></fieldset>
+            }
+            @RenderBody()
+        </main>
+        @if (!wide)
+        {
+        <aside class="site-sidebar" aria-label="About and topics">
+            @if (signedInUser is not null)
+            {
+                <section class="window" aria-labelledby="sidebar-account">
+                    <div class="title-bar"><h2 class="title-bar-text" id="sidebar-account">Your account</h2></div>
+                    <div class="window-body has-space">
+                        <div class="account-tile">
+                            <img class="avatar" src="@signedInUser.AvatarUrl" alt="" width="40" height="40" />
+                            <p><strong>@signedInUser.DisplayName</strong><br />@signedInUser.RankLabel</p>
+                        </div>
+                        <a href="/manage/">Manage your posts</a>
+                        @if (User.IsInRole("Admin")) { <br /><a href="/admin/">Admin panel</a> }
+                    </div>
+                </section>
+            }
+            <section class="window" aria-labelledby="sidebar-about">
+                <div class="title-bar"><h2 class="title-bar-text" id="sidebar-about">About this blog</h2></div>
+                <div class="window-body has-space">
+                    <p>@site.Description</p>
+                    <a href="/about/">About @site.Name</a>
+                </div>
+            </section>
+            <section class="window" aria-labelledby="sidebar-topics">
+                <div class="title-bar"><h2 class="title-bar-text" id="sidebar-topics">Topics</h2></div>
+                <div class="window-body has-space">
+                    @if (Blog.Tags.Count > 0)
+                    {
+                        <ul class="tree-view has-container topic-list">
+                            @foreach (var tag in Blog.Tags)
+                            {
+                                <li>
+                                    <a href="/tags/@tag/" aria-current="@(current.TrimEnd('/') == $"/tags/{tag}" ? "page" : null)">@BlogStore.TagLabel(tag)</a>
+                                    <span>(@Blog.Posts.Count(post => post.Tags.Contains(tag)))</span>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p>No topics yet.</p>
+                    }
+                </div>
+            </section>
+            <section class="window" aria-labelledby="sidebar-subscribe">
+                <div class="title-bar"><h2 class="title-bar-text" id="sidebar-subscribe">Subscribe</h2></div>
+                <div class="window-body has-space">
+                    <p>Get new posts in your RSS reader.</p>
+                    <a href="/rss.xml">Subscribe to the feed</a>
+                </div>
+            </section>
+        </aside>
+        }
+    </div>
+    <footer class="status-bar site-footer">
+        <p class="status-bar-field footer-name"><img src="@site.IconUrl" alt="" width="16" height="16" />@site.Name</p>
+        <p class="status-bar-field"><a href="/archive/">@Blog.Posts.Count @(Blog.Posts.Count == 1 ? "post" : "posts")</a></p>
+        <p class="status-bar-field">@(signedInUser is null ? "Not signed in" : $"Signed in as {signedInUser.DisplayName}")</p>
+        <p class="status-bar-field"><a href="/rss.xml">RSS feed</a></p>
+    </footer>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

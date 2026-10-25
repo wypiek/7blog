@@ -1,0 +1,9 @@
+@using SevenBlog
+@using SevenBlog.Services
+@using Microsoft.Extensions.Options
+@inject BlogStore Blog
+@inject IOptions<BlogOptions> BlogSettings
+@inject UserStore Accounts
+@inject SiteSettingsStore Site
+@namespace SevenBlog.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers

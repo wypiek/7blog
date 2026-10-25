@@ -1,0 +1,101 @@
+@page "/admin/analytics"
+@model SevenBlog.Pages.Admin.AnalyticsModel
+@{
+    ViewData["Title"] = "Analytics — Admin panel";
+    var report = Model.Report;
+    var maxDay = report.Days.Max(day => day.Views);
+    var busiest = report.Days.MaxBy(day => day.Views);
+    var maxPage = report.Pages.Count == 0 ? 0 : report.Pages.Max(entry => entry.Views);
+    var maxSource = report.Referrers.Count == 0 ? 0 : report.Referrers.Max(source => source.Views);
+    var culture = System.Globalization.CultureInfo.InvariantCulture;
+}
+<div class="heading-with-action admin-section-heading">
+    <h2>Analytics</h2>
+    <form method="get" class="analytics-range">
+        <label for="Days">Period</label>
+        <select id="Days" name="Days">
+            @foreach (var range in AnalyticsModel.Ranges)
+            {
+                <option value="@range" selected="@(range == Model.Days)">Last @range days</option>
+            }
+        </select>
+        <button type="submit">Show</button>
+    </form>
+</div>
+<div class="admin-overview">
+    <fieldset><legend>Page views</legend><p class="stat-value">@report.Views.ToString("N0", culture)</p></fieldset>
+    <fieldset><legend>Visitors</legend><p class="stat-value">@report.Visitors.ToString("N0", culture)</p><p class="form-help">Unique per day, added up</p></fieldset>
+    <fieldset>
+        <legend>Busiest day</legend>
+        <p class="stat-value">@(busiest is { Views: > 0 } ? busiest.Day.ToString("MMM d", culture) : "—")</p>
+        @if (busiest is { Views: > 0 }) { <p class="form-help">@busiest.Views.ToString("N0", culture) views</p> }
+    </fieldset>
+</div>
+@if (report.Views == 0)
+{
+    <fieldset class="message"><legend>No visits yet</legend><p>Page views appear here as people read the blog. Visits by signed-in users, bots and the admin pages are not counted.</p></fieldset>
+}
+else
+{
+    <div class="admin-columns analytics-lists">
+        <section aria-labelledby="top-pages">
+            <h3 id="top-pages">Top pages</h3>
+            <table class="post-table analytics-table">
+                <thead><tr><th scope="col">Page</th><th scope="col">Views</th><th scope="col"><span class="sr-only">Share</span></th></tr></thead>
+                <tbody>
+                @foreach (var entry in report.Pages)
+                {
+                    <tr>
+                        <td><a href="@entry.Key" title="@entry.Key">@Model.Label(entry.Key)</a></td>
+                        <td>@entry.Views.ToString("N0", culture)</td>
+                        <td><div role="progressbar" class="analytics-bar" aria-hidden="true" title="@entry.Views views"><div style="width: @AnalyticsModel.Width(entry.Views, maxPage)"></div></div></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </section>
+        <section aria-labelledby="top-referrers">
+            <h3 id="top-referrers">Referring sites</h3>
+            @if (report.Referrers.Count == 0)
+            {
+                <p class="form-help">No visits from other sites in this period.</p>
+            }
+            else
+            {
+                <table class="post-table analytics-table">
+                    <thead><tr><th scope="col">Site</th><th scope="col">Views</th><th scope="col"><span class="sr-only">Share</span></th></tr></thead>
+                    <tbody>
+                    @foreach (var source in report.Referrers)
+                    {
+                        <tr>
+                            <td title="@source.Key">@source.Key</td>
+                            <td>@source.Views.ToString("N0", culture)</td>
+                            <td><div role="progressbar" class="analytics-bar" aria-hidden="true" title="@source.Views views"><div style="width: @AnalyticsModel.Width(source.Views, maxSource)"></div></div></td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            }
+        </section>
+    </div>
+    <section aria-labelledby="daily-views">
+        <h3 id="daily-views">Day by day</h3>
+        <div class="table-scroll has-scrollbar" role="region" aria-label="Daily page views" tabindex="0">
+            <table class="post-table analytics-table analytics-days">
+                <thead><tr><th scope="col">Date (UTC)</th><th scope="col">Views</th><th scope="col">Visitors</th><th scope="col"><span class="sr-only">Share</span></th></tr></thead>
+                <tbody>
+                @foreach (var day in report.Days)
+                {
+                    <tr>
+                        <td>@day.Day.ToString("ddd, MMM d", culture)</td>
+                        <td>@day.Views.ToString("N0", culture)</td>
+                        <td>@day.Visitors.ToString("N0", culture)</td>
+                        <td><div role="progressbar" class="analytics-bar" aria-hidden="true" title="@day.Views views, @day.Visitors visitors"><div style="width: @AnalyticsModel.Width(day.Views, maxDay)"></div></div></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </section>
+}
+<p class="form-help analytics-privacy">Counted on the server without cookies or tracking scripts, and no IP addresses are stored. Unique visitors are recognised with a hash that changes every day and is deleted afterwards. Signed-in users, bots and admin pages are not counted, and browsers sending Do Not Track or Global Privacy Control are counted as views but not as visitors.</p>

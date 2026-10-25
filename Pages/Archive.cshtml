@@ -1,0 +1,29 @@
+@page "/archive"
+@{ ViewData["Title"] = "Archive"; }
+<header class="page-heading">
+    <h1>Archive</h1>
+    <p>All @Blog.Posts.Count @(Blog.Posts.Count == 1 ? "post" : "posts"), grouped by year.</p>
+</header>
+@if (Blog.Posts.Count == 0)
+{
+    <p>No posts yet.</p>
+}
+else
+{
+    <ul class="tree-view has-container has-collapse-button has-connector archive-tree">
+        @foreach (var group in Blog.Posts.GroupBy(post => post.Date.Year))
+        {
+            <li>
+                <details open>
+                    <summary>@group.Key (@group.Count())</summary>
+                    <ul>
+                        @foreach (var post in group)
+                        {
+                            <li><time datetime="@post.Date.ToString("O")">@post.Date.ToString("MMM dd", System.Globalization.CultureInfo.InvariantCulture)</time> <a href="@post.Url">@post.Title</a></li>
+                        }
+                    </ul>
+                </details>
+            </li>
+        }
+    </ul>
+}

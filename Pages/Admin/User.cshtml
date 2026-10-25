@@ -1,0 +1,79 @@
+@page "/admin/users/{id}"
+@model SevenBlog.Pages.Admin.UserModel
+@{ ViewData["Title"] = $"{Model.Account.Username} — Admin panel"; }
+<div class="admin-user-heading">
+    <img class="avatar avatar-medium" src="@Model.Account.AvatarUrl" alt="" width="64" height="64" />
+    <div>
+        <h2>@Model.Account.DisplayName</h2>
+        <p>@@@Model.Account.Username · @Model.Account.RankLabel · @(Model.Account.Disabled ? "Disabled" : "Active") · @Model.PostCount @(Model.PostCount == 1 ? "post" : "posts") · <a href="@Model.Account.ProfileUrl">Public profile</a></p>
+    </div>
+</div>
+<p><a href="/admin/users/">← All users</a></p>
+<partial name="_FormErrors" />
+<div class="admin-columns">
+    <form method="post" asp-page-handler="Details" class="account-form">
+        <fieldset>
+            <legend>Account details</legend>
+            <div class="form-field"><label for="Username">Username</label><input type="text" id="Username" name="Username" value="@Model.Username" required maxlength="32" autocomplete="off" /><small>Changing it changes the profile address to /users/<em>new-name</em>/.</small></div>
+            <div class="form-field"><label for="DisplayName">Display name</label><input type="text" id="DisplayName" name="DisplayName" value="@Model.DisplayName" required maxlength="80" /></div>
+            <div class="form-field"><label for="Bio">Bio</label><textarea id="Bio" name="Bio" rows="3" maxlength="1000">@Model.Bio</textarea></div>
+            <div class="form-field">
+                <label for="Rank">Rank</label>
+                @if (Model.IsSelf)
+                {
+                    <input type="hidden" name="Rank" value="@Model.Account.Rank" />
+                    <select id="Rank" disabled><option>@Model.Account.RankLabel</option></select>
+                    <small>You cannot change your own rank.</small>
+                }
+                else
+                {
+                    <select id="Rank" name="Rank">
+                        <option value="Author" selected="@(Model.Rank != "Admin")">Author</option>
+                        <option value="Admin" selected="@(Model.Rank == "Admin")">Administrator</option>
+                    </select>
+                    <small>Changing the rank signs the user out everywhere.</small>
+                }
+            </div>
+            <div class="form-actions"><button type="submit" class="default">Save details</button></div>
+        </fieldset>
+    </form>
+    <div>
+        @if (!Model.IsSelf)
+        {
+            <form method="post" asp-page-handler="Password" class="account-form">
+                <fieldset>
+                    <legend>Reset password</legend>
+                    <div class="form-field"><label for="NewPassword">New password</label><input type="password" id="NewPassword" name="NewPassword" required minlength="12" maxlength="128" autocomplete="new-password" /></div>
+                    <div class="form-field"><label for="ConfirmPassword">Confirm new password</label><input type="password" id="ConfirmPassword" name="ConfirmPassword" required maxlength="128" autocomplete="new-password" /></div>
+                    <p class="form-help">Also unlocks the account and signs the user out everywhere.</p>
+                    <div class="form-actions"><button type="submit">Reset password</button></div>
+                </fieldset>
+            </form>
+            <form method="post" asp-page-handler="Status" class="account-form">
+                <fieldset>
+                    <legend>Status</legend>
+                    <p>@(Model.Account.Disabled ? "This account is disabled and cannot sign in." : "This account is active.")</p>
+                    <div class="form-actions"><button type="submit">@(Model.Account.Disabled ? "Enable account" : "Disable account")</button></div>
+                </fieldset>
+            </form>
+        }
+        else
+        {
+            <fieldset class="account-form">
+                <legend>Your own account</legend>
+                <p class="form-help">Change your password in <a href="/account/settings/">Account settings</a>. To change your rank or disable this account, use another administrator account or the command line.</p>
+            </fieldset>
+        }
+        @if (Model.Account.AvatarId is not null || Model.Account.BannerId is not null)
+        {
+            <form method="post" asp-page-handler="Pictures" class="account-form">
+                <fieldset>
+                    <legend>Pictures</legend>
+                    @if (Model.Account.AvatarId is not null) { <div><input type="checkbox" id="RemoveAvatar" name="RemoveAvatar" value="true" /><label for="RemoveAvatar">Remove profile picture</label></div> }
+                    @if (Model.Account.BannerId is not null) { <div><input type="checkbox" id="RemoveBanner" name="RemoveBanner" value="true" /><label for="RemoveBanner">Remove profile banner</label></div> }
+                    <div class="form-actions"><button type="submit">Remove selected</button></div>
+                </fieldset>
+            </form>
+        }
+    </div>
+</div>

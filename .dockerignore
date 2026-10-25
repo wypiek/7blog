@@ -1,0 +1,15 @@
+**/bin
+**/obj
+**/.vs
+**/.idea
+.git
+.env
+.env.*
+.npm-cache
+.tools
+.data
+tests
+TestResults
+README.md
+compose*.yaml
+Caddyfile*

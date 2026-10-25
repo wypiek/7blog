@@ -1,0 +1,11 @@
+bin/
+obj/
+.vs/
+.idea/
+.npm-cache/
+.tools/
+.data/
+.env
+.env.*
+!.env.example
+TestResults/

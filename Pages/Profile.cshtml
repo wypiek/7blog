@@ -1,0 +1,26 @@
+@page "/users/{username}"
+@model SevenBlog.Pages.ProfileModel
+@{ ViewData["Title"] = Model.Account.DisplayName; }
+@if (Model.Account.BannerUrl is string banner)
+{
+    <img class="profile-banner" src="@banner" alt="" width="1600" height="400" />
+}
+<header class="page-heading profile-heading">
+    <img class="avatar avatar-large" src="@Model.Account.AvatarUrl" alt="" width="96" height="96" />
+    <div><h1>@Model.Account.DisplayName</h1><p>@@@Model.Account.Username</p></div>
+</header>
+<fieldset class="profile-details">
+    <legend>Profile</legend>
+    <dl>
+        <div><dt>Rank</dt><dd>@Model.Account.RankLabel</dd></div>
+        <div><dt>Published posts</dt><dd>@Model.Posts.Count</dd></div>
+        <div><dt>Joined</dt><dd>@Model.Account.CreatedAt.ToString("MMM d, yyyy", System.Globalization.CultureInfo.InvariantCulture)</dd></div>
+    </dl>
+    @if (!string.IsNullOrWhiteSpace(Model.Account.Bio)) { <p class="profile-bio">@Model.Account.Bio</p> }
+    @if (UserStore.UserId(User) == Model.Account.Id) { <p><a href="/account/settings/">Edit your profile</a></p> }
+</fieldset>
+<h2 class="section-title">Posts by @Model.Account.DisplayName</h2>
+<div class="post-list">
+    @foreach (var post in Model.Posts) { <partial name="_PostSummary" model="post" /> }
+    @if (Model.Posts.Count == 0) { <p>No published posts yet.</p> }
+</div>

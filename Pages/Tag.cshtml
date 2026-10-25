@@ -1,0 +1,13 @@
+@page "/tags/{tag}"
+@model TagModel
+@{ ViewData["Title"] = $"Topic: {BlogStore.TagLabel(Model.Tag)}"; }
+<header class="page-heading">
+    <h1>Topic: @BlogStore.TagLabel(Model.Tag)</h1>
+    <p>@Model.Posts.Count @(Model.Posts.Count == 1 ? "post" : "posts")</p>
+</header>
+<div class="post-list">
+    @foreach (var post in Model.Posts)
+    {
+        <partial name="_PostSummary" model="post" />
+    }
+</div>

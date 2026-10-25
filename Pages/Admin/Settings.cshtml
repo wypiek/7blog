@@ -1,0 +1,37 @@
+@page "/admin/settings"
+@model SevenBlog.Pages.Admin.SettingsModel
+@{ ViewData["Title"] = "Settings — Admin panel"; }
+<h2 class="admin-section-heading">Site settings</h2>
+<partial name="_FormErrors" />
+<form method="post" enctype="multipart/form-data">
+    <div class="admin-columns">
+        <fieldset class="account-form">
+            <legend>General</legend>
+            <div class="form-field"><label for="Name">Site name</label><input type="text" id="Name" name="Name" value="@Model.Name" required maxlength="60" /><small>Shown in the header, the browser tab, the footer and the RSS feed.</small></div>
+            <div class="form-field"><label for="Description">Tagline</label><input type="text" id="Description" name="Description" value="@Model.Description" maxlength="200" /><small>Shown under the site name and used as the default page description.</small></div>
+            <div class="form-field"><label for="Author">Default author name</label><input type="text" id="Author" name="Author" value="@Model.Author" required maxlength="80" /><small>Used for posts that do not belong to an account.</small></div>
+            <div class="form-field"><label for="About">About page</label><textarea id="About" name="About" rows="8" maxlength="20000">@Model.About</textarea><small>Markdown. Leave empty to show the default text built from the name, tagline and author.</small></div>
+        </fieldset>
+        <fieldset class="account-form">
+            <legend>Appearance</legend>
+            <div class="picture-row">
+                <img class="site-icon-preview" src="@Model.Current.IconUrl" alt="Current site icon" width="48" height="48" />
+                <div class="form-field">
+                    <label for="Icon">Site icon</label>
+                    <input type="file" id="Icon" name="Icon" accept="@ImageProcessor.Accept" />
+                    <small>Used as the browser tab icon and in the footer. Cropped to a square, 128 px.</small>
+                    @if (Model.Current.IconId is not null) { <div><input type="checkbox" id="RemoveIcon" name="RemoveIcon" value="true" /><label for="RemoveIcon">Use the default icon</label></div> }
+                </div>
+            </div>
+            @if (Model.Current.HeaderUrl is string header) { <img class="banner-preview header-preview" src="@header" alt="Current header background" /> }
+            <div class="form-field">
+                <label for="Header">Header background</label>
+                <input type="file" id="Header" name="Header" accept="@ImageProcessor.Accept" />
+                <small>Shown behind the site name across the top of every page. Cropped to 4:1, 2000 × 500. A calm, light image reads best.</small>
+                @if (Model.Current.HeaderId is not null) { <div><input type="checkbox" id="RemoveHeader" name="RemoveHeader" value="true" /><label for="RemoveHeader">Remove the header background</label></div> }
+            </div>
+            <p class="form-help">JPEG, PNG, WebP or GIF, up to 12 MB each. Images are compressed when you save.</p>
+        </fieldset>
+    </div>
+    <div class="form-actions"><button type="submit" class="default">Save settings</button></div>
+</form>

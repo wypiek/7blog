@@ -1,0 +1,10 @@
+{
+  "title": "Hello, world.",
+  "description": "The first post on 7blog.",
+  "date": "2026-10-25T09:00:00Z",
+  "tags": [
+    "thoughts",
+    "projects"
+  ],
+  "featured": true
+}
